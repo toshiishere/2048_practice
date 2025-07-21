@@ -92,7 +92,13 @@ class Game2048:
         print(f"Score: {self.score}")
         for row in self.grid:
             print('+------' * self.size + '+')
-            print(''.join(f'|{str(num).center(6) if num != 0 else '      '}' for num in row) + '|')
+            print(
+                ''.join(
+                    f"|{str(num).center(6) if num != 0 else '      '}" 
+                    for num in row
+                ) + '|'
+            )
+
         print('+------' * self.size + '+')
 
 
