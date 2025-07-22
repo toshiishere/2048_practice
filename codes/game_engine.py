@@ -2,8 +2,8 @@
 """
 2048 Game in Python.
 Usage:
-    python 2048_game.py         # Console mode
-    python 2048_game.py --gui   # GUI mode with tkinter
+    python game_engine.py         # Console mode
+    python game_engine.py --gui   # GUI mode with tkinter
 """
 
 import random

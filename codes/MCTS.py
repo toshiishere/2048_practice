@@ -76,10 +76,8 @@ def calc_result(game):
 
     avg_scores = [child.w / child.n if child.n > 0 else -np.inf for child in root.children]
     best_idx = int(np.argmax(avg_scores))
-    return moves[np.argmax(scores)]
+    return moves[best_idx]
         
-
-
 
 if __name__ == "__main__":
 
