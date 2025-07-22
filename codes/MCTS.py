@@ -3,9 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 from tqdm import tqdm
+import copy
 
 C=np.sqrt(2)
-depth=10
+default_ROLLOUT_DEPTH = 50
 MCTS_time=1000
 
 moves = [
@@ -15,66 +16,66 @@ moves = [
             Game2048.move_right
         ]
 
-class node:
-    def __init__(self,parent,game,visited=0):
+class Node:
+    def __init__(self,parent,game,visited=False):
         self.game=game
         self.parent=parent
-        self.childs=[]
-        self.w=0
+        self.children=[]
+        self.w=0.0
         self.n=0
         self.visited=visited
 
     def select(self):
-        if(not self.visited):return self
-        UCBs=[]
-        UCBs = (self.calc_UCB(i) for i in self.child)
-        return self.childs[np.argmax(np.array(UCBs))].select() #recursively find the leaf node
+        if not self.visited or not self.children: return self
+        ucb_values = [child.calc_ucb() for child in self.children]
+        best_idx = int(np.argmax(ucb_values))
+        return self.children[best_idx].select()
     
-    def calc_UCB(self):
-        if(not self.visited): return float('inf')
-        explore=C*np.sqrt(np.log(self.parent.n//self.n))
+    def calc_ucb(self):
+        if (not self.visited or self.n == 0): return float('inf')
+        explore=C*np.sqrt(np.log(self.parent.n/self.n))
         exploit=self.w//self.n
         return explore+exploit
 
     def expand(self):
         for move in moves:
-            new_game = Game2048(self.game)
+            new_game = copy.deepcopy(self.game)
             if move(new_game):
-                self.childs.append(node(self, new_game, 0))
+                new_game.spawn()
+                self.children.append(Node(self, new_game, visited=False))
             else:
-                self.childs.append(node(self, new_game, 1))#cannot move, treated as if visited
+                self.children.append(Node(self, new_game, visited=True))#TODO not sure if this work
+        self.visited = True
         
+    #TODO should be score diff from original rather than f(score)
     def rollout(self):
-        new_game = Game2048(self.game)
-        self.visited=1
+        new_game = copy.deepcopy(self.game)
         depth=0
-        while True:
-            if new_game.is_game_over() or depth>10:
-                return np.log2(new_game.score)/2 - 3    #return log of the score as if it is 2, 1, 0 score
+        while not new_game.is_game_over() and depth < default_ROLLOUT_DEPTH:
             move = random.choice(moves)
             if move(new_game):
                 new_game.spawn()
                 depth+=1
+        return np.log2(new_game.score)/2 - 3    #return log of the score as if it is 2, 1, 0 score
 
     def backpropagate(self,score=0):
-        if(self.parent):
-            self.w+=score
-            self.n+=1
-            self.parent.backpropagate
+        self.w+=score
+        self.n+=1
+        if self.parent is not None:
+            self.parent.backpropagate(score)
     
 def calc_result(game):
-    root=node(False,game)
-    node.expand()
+    root = Node(None, copy.deepcopy(game), visited=True)
+    root.expand()#first expand should ensure all the moves are valid TODO
     root.visited=1
-    for i in range(MCTS_time):
-        point=root.select()
-        if(point.visited):point.expand()
-        else: score=point.rollout()
-        point.backpropagate(score)
+    for _ in range(MCTS_time):
+        leaf=root.select()
+        if(not leaf.visited):leaf.expand()
+        score=leaf.rollout()
+        leaf.backpropagate(score)
 
-    scores=np.array()
-    for i in root.childs:
-        scores.append(i.w//i.n)
+    avg_scores = [child.w / child.n if child.n > 0 else -np.inf for child in root.children]
+    best_idx = int(np.argmax(avg_scores))
     return moves[np.argmax(scores)]
         
 
