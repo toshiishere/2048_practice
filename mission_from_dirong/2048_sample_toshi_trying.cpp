@@ -735,13 +735,21 @@ public:
 	 *  where (x,x,x,x) means (before state, after state, action, reward)
 	 */
 	void update_episode(std::vector<state>& path, float alpha = 0.1) const {
-		//TODO skip the first and last
+		//TODO skip the last
 		float target=0;
-		path.pop_back();
-		for(state t:path){
+		path.pop_back();//starting from the back
+		for (path.pop_back(); path.size(); path.pop_back()){
+			auto& t = path.back();
 			float calc_eval=target - estimate(t.after_state());
 			target= t.reward()+update(t.after_state(),alpha*calc_eval);
 		}
+		// float target=0;
+		// path.pop_back();
+		// for(int i=1;i<path.size()-2;i++){
+		// 	auto t=path[i];
+		// 	float calc_eval= estimate(t.after_state()) + alpha*(path[i+1].reward()+estimate(path[i+1].after_state())-estimate(t.after_state()));
+		// 	update(t.after_state(),calc_eval);
+		// }
 
 	}
 
