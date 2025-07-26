@@ -27,6 +27,8 @@
 #include <fstream>
 #include <cmath>
 
+#include <stdint.h>
+
 /**
  * output streams
  * to enable debugging (more output), just change the line to 'std::ostream& debug = std::cout;'
@@ -477,11 +479,14 @@ public:
 	 */
 	virtual float update(const board& b, float u) {
 		// TODO done
+		float adj=u/iso_last;
+		float value = 0;
 		for (int i = 0; i < iso_last; i++) {
 			size_t idx = indexof(isomorphic[i], b);
-			weight[idx]=u;
+			weight[idx]+=adj;
+			value+=weight[idx];
 		}
-		return u;
+		return value;
 	}
 
 	/**
@@ -522,6 +527,7 @@ protected:
 		for (size_t j = 0; j < patt.size(); j++) {
 			int tile_exp = b.at(patt[j]); 
 			idx |= (size_t(tile_exp) << (j<<2)); 
+		}
 		return idx;
 	}
 
@@ -729,10 +735,12 @@ public:
 	 *  where (x,x,x,x) means (before state, after state, action, reward)
 	 */
 	void update_episode(std::vector<state>& path, float alpha = 0.1) const {
-		//TODO not sure
+		//TODO skip the first and last
+		float target=0;
+		path.pop_back();
 		for(state t:path){
-			float calc_eval=alpha*(t.reward()+estimate(t.before_state())-estimate(t.after_state()));
-			update(t.before_state(),calc_eval);
+			float calc_eval=target - estimate(t.after_state());
+			target= t.reward()+update(t.after_state(),alpha*calc_eval);
 		}
 
 	}
