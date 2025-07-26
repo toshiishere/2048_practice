@@ -879,14 +879,35 @@ int main(int argc, const char* argv[]) {
 	std::srand(seed);
 
 	// initialize the features
-	tdl.add_feature(new pattern({ 0, 1, 2, 3, 4, 5 }));
-	tdl.add_feature(new pattern({ 4, 5, 6, 7, 8, 9 }));
-	tdl.add_feature(new pattern({ 0, 1, 2, 4, 5, 6 }));
-	tdl.add_feature(new pattern({ 4, 5, 6, 8, 9, 10 }));
+	// tdl.add_feature(new pattern({ 0, 1, 2, 3, 4, 5 }));
+	// tdl.add_feature(new pattern({ 4, 5, 6, 7, 8, 9 }));
+	// tdl.add_feature(new pattern({ 0, 1, 2, 4, 5, 6 }));
+	// tdl.add_feature(new pattern({ 4, 5, 6, 8, 9, 10 }));
+
+
+	//saving_of_17_patterns_no_iso
+	tdl.add_feature(new pattern({ 0,1,2,3 },1));
+	tdl.add_feature(new pattern({ 4,5,6,7 },1));
+	tdl.add_feature(new pattern({ 8,9,10,11 },1));
+	tdl.add_feature(new pattern({ 12,13,14,15 },1));
+	tdl.add_feature(new pattern({ 0,4,8,12 },1));
+	tdl.add_feature(new pattern({ 1,5,9,13 },1));
+	tdl.add_feature(new pattern({ 2,6,10,14 },1));
+	tdl.add_feature(new pattern({ 3,7,11,15 },1));
+	tdl.add_feature(new pattern({ 3,7,11,15 },1));
+
+	tdl.add_feature(new pattern({ 0,1,4,5 },1));
+	tdl.add_feature(new pattern({ 1,2,5,6 },1));
+	tdl.add_feature(new pattern({ 2,3,6,7 },1));
+	tdl.add_feature(new pattern({ 4,5,8,9 },1));
+	tdl.add_feature(new pattern({ 5,6,9,10 },1));
+	tdl.add_feature(new pattern({ 6,7,10,11 },1));
+	tdl.add_feature(new pattern({ 8,9,12,13 },1));
+	tdl.add_feature(new pattern({ 9,10,13,14 },1));
+	tdl.add_feature(new pattern({ 10,11,14,15 },1));
 
 	// restore the model from file
 	tdl.load("");
-
 	// train the model
 	std::vector<state> path;
 	path.reserve(20000);
@@ -920,7 +941,7 @@ int main(int argc, const char* argv[]) {
 	}
 
 	// store the model into file
-	tdl.save("");
+	tdl.save("saving_of_17_patterns_no_iso");
 
 	return 0;
 }
