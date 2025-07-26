@@ -427,7 +427,7 @@ public:
 		}
 
 		/**
-		 * isomorphic patterns can be calculated by board = 0x4312752186532731ull
+		 * isomorphic patterns can be calculated by board (example := 0x4312752186532731ull)
 		 * 
 		 * take pattern { 0, 1, 2, 3 } as an example
 		 * apply the pattern to the original board (left), we will get 0x1372
@@ -463,18 +463,25 @@ public:
 	 * estimate the value of a given board
 	 */
 	virtual float estimate(const board& b) const {
-		// TODO
-		for(int i=0;i<m;i++){//m代表m(17)種pattern
-			int index=b.fetch()
+		// TODO done
+		float sum = 0;
+		for (int i = 0; i < iso_last; i++) {
+			size_t idx = indexof(isomorphic[i], b);
+			sum += weight[idx];
 		}
+		return sum;
 	}
 
 	/**
 	 * update the value of a given board, and return its updated value
 	 */
 	virtual float update(const board& b, float u) {
-		// TODO
-
+		// TODO done
+		for (int i = 0; i < iso_last; i++) {
+			size_t idx = indexof(isomorphic[i], b);
+			weight[idx]=u;
+		}
+		return u;
 	}
 
 	/**
@@ -510,8 +517,12 @@ public:
 
 protected:
 
-	size_t indexof(const std::vector<int>& patt, const board& b) const {
-		// TODO
+	size_t indexof(const std::vector<int>& patt, const board& b) const {//TODO done
+		size_t idx = 0;
+		for (size_t j = 0; j < patt.size(); j++) {
+			int tile_exp = b.at(patt[j]); 
+			idx |= (size_t(tile_exp) << (j<<2)); 
+		return idx;
 	}
 
 	std::string nameof(const std::vector<int>& patt) const {
@@ -672,17 +683,26 @@ public:
 	 *  before_state() is b
 	 *  after_state() is b's best successor (after state)
 	 *  action() is the best action
-	 *  reward() is the reward of performing action()
+	 *  reward() is the reward of performing action() reward應該沒用到
 	 *  value() is the estimated value of after_state()
 	 *
 	 * you may simply return state() if no valid move
+	 * 
+	 * 
+	board before;
+	board after;
+	int opcode;
+	int score;
+	float esti;
 	 */
 	state select_best_move(const board& b) const {
 		state after[4] = { 0, 1, 2, 3 }; // up, right, down, left
-		state* best = after;
+		state* best = after; //預設指到after[0]
 		for (state* move = after; move != after + 4; move++) {
 			if (move->assign(b)) {
-				// TODO
+				// TODO not sure, just two line?
+				float est = estimate(move->after_state());  
+        		move->set_value(move->reward() + est);
 
 				if (move->value() > best->value())
 					best = move;
@@ -709,7 +729,11 @@ public:
 	 *  where (x,x,x,x) means (before state, after state, action, reward)
 	 */
 	void update_episode(std::vector<state>& path, float alpha = 0.1) const {
-		// TODO
+		//TODO not sure
+		for(state t:path){
+			float calc_eval=alpha*(t.reward()+estimate(t.before_state())-estimate(t.after_state()));
+			update(t.before_state(),calc_eval);
+		}
 
 	}
 
